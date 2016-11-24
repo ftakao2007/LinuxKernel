@@ -4,24 +4,27 @@
 #include <sys/signal.h>
 
 int main() {
-  int status; /* wait関数用 */
-  /* equivalent to fork() : ヘルパー関数fork()を使わずにcloneシステムコールを呼び出す */
-  int pid = syscall(SYS_clone, SIGCHLD, 0, 0, 0, 0);
-  /* 関数syscall()の中でCPUのsyscall命令を発行している)
+  /* wait関数用 */
+  int status;
 
-  if (pid == 0) {            /* 子プロセスの処理 */
-      int cpid = getpid();
-      printf("Child, child pid = %d\n", cpid);
-  } else if (pid == -1) {    /* エラー処理 */
-      perror("SYS_clone: ");
-  } else {                   /* 親プロセスの処理 */
+  /* equivalent to fork() : ヘルパー関数fork()を使わずにcloneシステムコールを呼び出す
+     関数syscall()の中でCPUのsyscall命令を発行している) */
+  int pid = syscall(SYS_clone, SIGCHLD, 0, 0, 0, 0);
+
+  /* 子プロセスの処理 */
+  if (pid == 0) {
+    int cpid = getpid();
+    printf("Child, child pid = %d\n", cpid);
+  /* エラー処理 */
+  } else if (pid == -1) {
+    perror("SYS_clone: ");
+  /* 親プロセスの処理 */
+  } else {
     printf("Parent, my pid = %d\n", pid);
   }
   wait(&status);  
   return;
 }
-
-
 
 
 /* syscall()
@@ -32,7 +35,7 @@ int main() {
     
   引数
     1. システムコールの番号
-      SYS_loneはシステムコールの番号を表すマクロでヘッダファイルの中で
+      SYS_cloneはシステムコールの番号を表すマクロでヘッダファイルの中で
       Cloneシステムコールに対応する「56」が定義されている
 
     2. フラグ
